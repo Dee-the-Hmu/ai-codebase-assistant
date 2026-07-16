@@ -1,5 +1,6 @@
 # AI Codebase Assistant
 
+![My Image](images/git_2x.png)
 ## Authors
 Dee Aein
 
