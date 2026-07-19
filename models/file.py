@@ -3,6 +3,11 @@ from sqlalchemy import ForeignKey
 
 from .base import Base
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING: 
+    from .repository import Repository # VS Code understands that: repository: Mapped["Repository"] refers to your Repository class, even though that import does not run when the application starts.
+
 class File(Base):
     __tablename__ = "files"
 
