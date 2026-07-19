@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING: 
     from .repository import Repository # VS Code understands that: repository: Mapped["Repository"] refers to your Repository class, even though that import does not run when the application starts.
+    from .chunk import Chunk
 
 class File(Base):
     __tablename__ = "files"
@@ -25,3 +26,6 @@ class File(Base):
 
     connecting: Repository.files  ↔  File.repository
     """
+
+    chunks: Mapped[list["Chunk"]] = relationship(back_populates="file")
+    # File.chunks <-> Chunk.file
