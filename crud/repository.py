@@ -51,7 +51,7 @@ def read_repo_with_github_url(db : Session, github_url : str) -> Repository | No
 def update_repo(db : Session, repo : Repository, repo_data : RepositoryUpdate) -> Repository:
     
     # convert the Pydantic repo_data RepositoryCreate model into a Dict***
-    update_data = repo_data.model_dump(exclude_unset=True)
+    update_data = repo_data.model_dump(exclude_unset=True) # includes only the fields the user has provided 
 
     if "github_url" in update_data: 
         update_data["github_url"] = str(update_data["github_url"])
