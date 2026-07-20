@@ -1,4 +1,6 @@
-
+"""
+adds metadata to code chunk before converting into a vector embeddings for better retrieval
+"""
 
 def build_searchable_text(
         repo_name : str,
