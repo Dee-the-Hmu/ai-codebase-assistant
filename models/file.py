@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, DateTime
 
 from .base import Base
+from datetime import datetime, timezone
 
 from typing import TYPE_CHECKING
 
@@ -15,6 +16,30 @@ class File(Base):
     id: Mapped[int] = mapped_column(
         primary_key=True,
         autoincrement=True
+    )
+    path: Mapped[str] = mapped_column(
+        nullable=False
+    )
+
+    name: Mapped[str] = mapped_column(
+        nullable=False
+    )
+
+    size_bytes: Mapped[int | None] = mapped_column(
+        nullable=True
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=False
     )
     repo_id: Mapped[int] = mapped_column(ForeignKey("repositories.id")) #repo_id attribute must match with the "id" column in the "repositories table"
 
