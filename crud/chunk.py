@@ -8,6 +8,7 @@ from schemas.chunk import ChunkCreate, ChunkUpdate
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
+# for 1 chunk
 def create_chunk(db : Session, chunk_data : ChunkCreate) -> Chunk: 
 
     new_chunk = Chunk(
@@ -27,6 +28,39 @@ def create_chunk(db : Session, chunk_data : ChunkCreate) -> Chunk:
     db.refresh(new_chunk)
 
     return new_chunk 
+
+# for multiple chunks
+def create_chunks(db : Session, chunk_datas : list[ChunkCreate]) -> list[Chunk]: 
+
+    chunks = []
+
+    for chunk_data in chunk_datas:
+        new_chunk = Chunk(
+            text_content=chunk_data.text_content,
+            start_line=chunk_data.start_line,
+            end_line=chunk_data.end_line,
+            class_name=chunk_data.class_name,
+            func_name=chunk_data.func_name,
+            chunk_type=chunk_data.chunk_type,
+            embedding=chunk_data.embedding,
+            metadata_=chunk_data.metadata_,
+            file_id=chunk_data.file_id
+        )
+        chunks.append(new_chunk)
+
+    try:
+        db.add_add(chunks)
+        db.commit()
+
+        for chunk in chunks:
+            db.refresh(chunk)
+
+        return chunks
+
+    except Exception:
+        db.rollback()
+        raise
+
 
 
 def read_chunk_by_id(db : Session, chunk_id : int) -> Chunk | None: 
