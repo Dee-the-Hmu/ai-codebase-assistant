@@ -2,7 +2,7 @@
 from models.file import File
 from schemas.file import FileCreate, FileUpdate
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
 
 def create_file(db : Session, file_data : FileCreate) -> File: 
@@ -33,6 +33,17 @@ def read_file_with_name_and_repo_id(db : Session, file_name : str, repo_id : int
         File.repo_id == repo_id
     )
     return db.scalar(statement)
+
+#load all files with repositories once, build a lookup dictionary, then create each chunk individually.
+def read_file_and_repo_with_file_ids(db: Session, file_ids : list[int]) -> dict[int, File] | None:
+    statement = (select(File)
+                .options(selectinload(File.repository)) # selectinload uses one query for files and one additional query for the related repositories.
+                .where(File.id.in_(file_ids))
+                )
+    files = db.scalar(statement).all()
+
+    return {file.id : file for file in files}
+    
 
 
 def update_file(db : Session, file : File, file_data : FileUpdate) -> File: 
