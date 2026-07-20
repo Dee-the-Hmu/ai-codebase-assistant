@@ -21,6 +21,25 @@ def embed_code_chunk(searchable_text : str) -> list[float]:
 
     return embeddings.tolist()
 
+# faster batch embedding = sending multiple searchable_texts to the embedding model at once (instead of embedding them 1 by 1)
+def embed_code_chunks(searchable_texts : list[str]) -> list[list[float]] :
+    if not searchable_texts:
+        return []
+    
+    for searchable_text in searchable_texts: 
+        if not searchable_text.strip():
+             raise ValueError("searchable_text cannot be empty")
+        
+    embeddings = model.encode_document(
+        searchable_texts,
+        batch_size=32,
+        normalize_embeddings=True,
+        show_progress_bar=True
+    )
+
+    return embeddings.toList
+
+
 def embed_user_question(query : str) -> list[float]:
     if not query.strip():
         raise ValueError("query cannot be empty")
