@@ -7,9 +7,12 @@ class ChunkBase(BaseModel):
     class_name : str | None = None
     func_name : str | None = None
     chunk_type : str
-    embedding : list[float]
+    # embedding : list[float]
     metadata_ : dict | None = None
     file_id : int 
+
+class ChunkRawWithNoEmbedding(ChunkBase):
+    pass
 
 class ChunkUpdate(BaseModel):
     text_content : str | None = None
@@ -23,10 +26,12 @@ class ChunkUpdate(BaseModel):
     file_id : int | None = None
 
 class ChunkCreate(ChunkBase):
+    embedding : list[float]
     pass
 
 class ChunkResponse(ChunkBase):
     id : int 
+    embedding : list[float]
 
     model_config = ConfigDict(from_attributes=True) #allows Pydantic to build responses from SQLAlchemy Chunk object's attributes
 
