@@ -1,5 +1,8 @@
 
 from models.chunk import Chunk
+from models.repository import Repository
+from models.file import File
+
 from schemas.chunk import ChunkCreate, ChunkUpdate
 
 from sqlalchemy.orm import Session
@@ -70,3 +73,39 @@ def delete_by_chunk_id_and_file_id(db : Session, chunk_id : int, file_id : int) 
 
     return True
 
+
+def semantic_search_chunks(db : Session, query_embedding : list[float], limit : int, file_id : int | None = None, repo_id : int | None = None) -> list[Chunk]:
+    
+    """
+    SELECT * FROM chunks AS c 
+    JOIN files as f ON f.id = c.file_id 
+    WHERE 
+    (:repo_id IS NULL OR f.repo_id = :repo_id)
+    AND
+    (:file_id IS NULL OR c.file_id = :file_id)
+    ORDER BY 
+    c.embedding <=> CAST(:query_embedding AS vector)
+    LIMIT :limit;
+    """
+    # : means the value is supplied
+    # <=> means cosine_similarity 
+        # compares teh angle b/w them
+            # cosine distance = 1 - cosine similarity
+            # distance near 0 -> very similar 
+            # larger distance -> less similar
+    # CAST means convert the value from list[float] to vector 
+    statement = select(Chunk)
+
+    if repo_id is not None: 
+        statement = statement.join(File).where(File.repo_id==repo_id)
+
+    if file_id is not None:
+        statement = statement.where(
+            Chunk.file_id==file_id
+        )
+
+    statement = (statement
+        .order_by(Chunk.embedding.cosine_distance(query_embedding)) 
+        .limit(limit)
+    )
+    return list(db.scalars(statement).all())
