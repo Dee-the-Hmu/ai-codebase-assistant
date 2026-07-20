@@ -11,7 +11,8 @@ def create_chunk(db : Session, chunk_data : ChunkCreate) -> Chunk:
         text_content=chunk_data.text_content,
         start_line=chunk_data.start_line,
         end_line=chunk_data.end_line,
-        func_or_class_name=chunk_data.func_or_class_name,
+        class_name=chunk_data.class_name,
+        func_name=chunk_data.func_name,
         chunk_type=chunk_data.chunk_type,
         embedding=chunk_data.embedding,
         metadata_=chunk_data.metadata_,
@@ -37,11 +38,11 @@ def read_all_chunks_by_file_id(db : Session, file_id : int) -> list[Chunk]:
         Chunk.file_id==file_id
     )
 
-    return db.scalar(statement).all() # *** only difference .all() returns all matching Chunk as a list 
+    return list(db.scalars(statement).all()) # *** only difference .all() returns all matching Chunk as a list 
     # if no chunks exist, return []
 
 
-def update_chunk(db : Session, chunk : Chunk, chunk_data : ChunkUpdate) -> Chunk | None:
+def update_chunk(db : Session, chunk : Chunk, chunk_data : ChunkUpdate) -> Chunk:
     update_data = chunk_data.model_dump(exclude_unset=True)
 
     for field,value in update_data.items():

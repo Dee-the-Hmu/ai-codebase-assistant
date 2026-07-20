@@ -24,8 +24,11 @@ class Chunk(Base):
     start_line: Mapped[int] = mapped_column(nullable=False)
     end_line: Mapped[int] = mapped_column(nullable=False)
 
-    func_or_class_name: Mapped[str | None] = mapped_column( #function or class name 
-        String, 
+    class_name: Mapped[str | None] = mapped_column(
+        nullable=True
+    )
+
+    func_name: Mapped[str | None] = mapped_column(
         nullable=True
     )
 
