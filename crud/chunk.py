@@ -41,6 +41,18 @@ def read_all_chunks_by_file_id(db : Session, file_id : int) -> list[Chunk]:
     # if no chunks exist, return []
 
 
+def update_chunk(db : Session, chunk : Chunk, chunk_data : ChunkUpdate) -> Chunk | None:
+    update_data = chunk_data.model_dump(exclude_unset=True)
+
+    for field,value in update_data.items():
+        setattr(chunk, field, value)
+
+    db.commit()
+    db.refresh(chunk)
+
+    return chunk
+
+
 def delete_by_chunk_id_and_file_id(db : Session, chunk_id : int, file_id : int) -> bool:
     statement = select(Chunk).where(
         Chunk.file_id==file_id,
