@@ -5,7 +5,7 @@ extract owner and repo name
 """
 from urllib.parse import urlparse
 
-def validate_and_parse_github_url(github_url : str) -> tuple[str, str]:
+def validate_and_parse_github_url(github_url : str) -> tuple[str, str, str]:
     
     #removes unnecessary spaces and a trailing / from the github_url
     normalized_url = github_url.strip().rstrip("/") #rstrip("/") removes / characters from the end 
@@ -37,5 +37,5 @@ def validate_and_parse_github_url(github_url : str) -> tuple[str, str]:
     
     owner, repo_name = path_parts
 
-    return (owner, repo_name)
+    return (owner, repo_name, normalized_url)
 
