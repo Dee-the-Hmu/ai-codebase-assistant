@@ -4,7 +4,7 @@ given a path to the repo_root (top lvl folder) of the extracted folder
     return a list of the paths to all files
 """
 from pathlib import Path 
-def get_repo_files(repo_root : Path) -> list[Path]:
+def get_all_repo_files(repo_root : Path) -> list[Path]:
 
     files_paths = []
 
