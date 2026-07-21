@@ -34,6 +34,13 @@ def read_file_with_name_and_repo_id(db : Session, file_name : str, repo_id : int
     )
     return db.scalar(statement)
 
+def read_file_with_path_and_repo_id(db : Session, file_path: str, repo_id : int) -> File | None:
+    statement = select(File).where(
+        File.path == file_path,
+        File.repo_id == repo_id
+    )
+    return db.scalar(statement)
+
 #load all files with repositories once, build a lookup dictionary, then create each chunk individually.
 def read_file_and_repo_with_file_ids(db: Session, file_ids : list[int]) -> dict[int, File] | None:
     statement = (select(File)
