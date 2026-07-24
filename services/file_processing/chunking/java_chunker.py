@@ -12,7 +12,7 @@ JAVA_PARSER = Parser(JAVA_LANGUAGE) #parser for Javc
 def create_java_chunks(text_content: str, file_id: int) -> list[ChunkRawWithNoEmbedding]:
 
     #Tree-sitter parse Bytes    source_bytes = text_content.encode("utf-8") 
-    source_bytes = text_content.encode("utf-8")
+    source_bytes = text_content.encode()
     tree = JAVA_PARSER.parse(source_bytes)
 
     #parser error -> fallback
