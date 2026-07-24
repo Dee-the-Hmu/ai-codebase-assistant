@@ -2,8 +2,8 @@ from pydantic import BaseModel, ConfigDict
 
 class ChunkBase(BaseModel):
     text_content : str
-    start_line : int
-    end_line : int
+    start_line : int | None = None
+    end_line : int | None = None
     class_name : str | None = None
     func_name : str | None = None
     chunk_type : str
