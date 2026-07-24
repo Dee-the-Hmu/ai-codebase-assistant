@@ -25,7 +25,8 @@ HEADERS = {
 
 def download_and_extract_repo(owner : str, repo_name : str, commit_sha: str, temp_directory : str) -> Path:
 
-    #url to download 
+    #url to download (download the last commit version of the default branch)
+    #commit SHA = guarantees a fixed reproducible repository version (better than the branch name)
     archive_url = f"{BASE_URL}/repos/{owner}/{repo_name}/zipball/{commit_sha}"
 
     #execute the get(url to download)
@@ -44,12 +45,12 @@ def download_and_extract_repo(owner : str, repo_name : str, commit_sha: str, tem
     extraction_path = temp_path / "extracted" # folder where the ZIP contents are extracted
 
     # write the zip files into archive_path (this is downloading the ZIP file)
-    archive_path.write_bytes(response.content) #response.content = the downloaded ZIP file as raw bytes
+    archive_path.write_bytes(response.content) #response.content = the downloaded ZIP file as raw bytes (ZIP archive byts not JSON, thus, we don't use response.json())
 
     #create the "extracted" folder 
-    extraction_path.mkdir(parents=True, exist_ok=True) #if exist, don't create (to avoid raisng an error)
+    extraction_path.mkdir(parents=True, exist_ok=True) #if exist, don't create (to avoid raisng an error --> exist_ok=True)
 
-    # unzip
+    # ZipFile reads files inside the ZIP, extractall = unzip
     with ZipFile(archive_path, "r") as zip_file: #opens the ZIP archive in read mode 
         zip_file.extractall(extraction_path) # extracts everything inside the ZIP into the extracted directory
 
