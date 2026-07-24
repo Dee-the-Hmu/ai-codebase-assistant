@@ -21,19 +21,23 @@ HEADERS = {
 }
 
 # get the repo
-def get_repository(owner : str, repo_name : str) -> dict:
+def get_repository(owner : str, repo_name : str) -> dict | None:
     #creates the url back from the owner and repo_name
     url = f"{BASE_URL}/repos/{owner}/{repo_name}"
+    try:
+        response = requests.get(
+            url=url,
+            headers=HEADERS,
+            timeout=15
+        )
 
-    response = requests.get(
-        url=url,
-        headers=HEADERS,
-        timeout=15
-    )
+        #checks whether the HTTP request failed (does nothing for succesful response 200, raises HTTPError for errors)
+        response.raise_for_status()
+        return response.json() # returns a Python dict
 
-    response.raise_for_status()
-
-    return response.json() # returns a Python dict
+    except requests.RequestException as error:
+        print(error)
+        return None
 
 # check if the repo is public 
 def check_public(repo_response_dict : dict) -> bool: 
