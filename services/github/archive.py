@@ -30,7 +30,7 @@ def download_and_extract_repo(owner : str, repo_name : str, commit_sha: str, tem
     archive_url = f"{BASE_URL}/repos/{owner}/{repo_name}/zipball/{commit_sha}"
 
     #execute the get(url to download)
-    response = requests.get(
+    response = requests.get( #response is raw ZIP bytes --> thus, use response.content instead of response.json()
         url=archive_url,
         headers=HEADERS,
         timeout=60

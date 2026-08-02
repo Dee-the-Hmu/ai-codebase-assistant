@@ -50,7 +50,7 @@ def ingest_repository(db : Session, github_url : str)-> Repository | None:
     if not owner or not repo_name:  
         return None
 
-    #see if the repo already exists or not in the repositories table
+    #see if the repo already exists or not, in the repositories table
     repo = read_repo_with_github_url(db, github_url=normalized_url)
 
     #repo already exist
