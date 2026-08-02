@@ -49,7 +49,7 @@ def create_chunks(db : Session, chunk_datas : list[ChunkCreate]) -> list[Chunk]:
         chunks.append(new_chunk)
 
     try:
-        db.add_add(chunks)
+        db.add(chunks)
         db.commit()
 
         for chunk in chunks:
