@@ -1,12 +1,12 @@
 from sentence_transformers import SentenceTransformer
 
-MODEL_NAME = "jinaai/jina-embeddings-v2-base-code"
+MODEL_NAME = "jinaai/jina-code-embeddings-0.5b"
 
 # load the model 
-model = SentenceTransformer(
-    MODEL_NAME,
-    trust_remote_code=True
-)
+model = SentenceTransformer(MODEL_NAME)
+
+# print(model.get_embedding_dimension()) = 896
+# print(model.get_max_seq_length()) = 32768
 
 dimension = model.get_embedding_dimension()
 
