@@ -30,21 +30,21 @@ from sqlalchemy.orm import Session
 
 from models.repository import Repository
 from crud.repository import read_repo_with_github_url, create_repo
-from github.url_validation import validate_and_parse_github_url
-from github.client import get_repository, check_public, make_RepositoryCreate_Obj
+from .github.url_validation import validate_and_parse_github_url
+from .github.client import get_repository, check_public, make_RepositoryCreate_Obj
 
-from file_processing.discover_file_paths import get_all_repo_files
-from file_processing.file_filtering import filter_supported_file_paths
-from file_processing.read_file import get_text_content
+from .file_processing.discover_file_paths import get_all_repo_files
+from .file_processing.file_filtering import filter_supported_file_paths
+from .file_processing.read_file import get_text_content
 from schemas.file import FileCreate
 from crud.file import create_file, read_file_with_path_and_repo_id
 from pathlib import Path
 
-from github.archive import download_and_extract_repo
+from .github.archive import download_and_extract_repo
 from tempfile import TemporaryDirectory #to get temporary directory created by python
 
-from file_processing.chunking.create_chunk import create_chunks
-from chunk_service import create_chunks_with_embeddings
+from .file_processing.chunking.create_chunk import create_chunks
+from .chunk_service import create_chunks_with_embeddings
 
 """
 validate user's passed in github URL
