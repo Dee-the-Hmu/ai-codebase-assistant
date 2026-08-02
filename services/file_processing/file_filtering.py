@@ -63,7 +63,7 @@ def filter_supported_file_paths(file_paths : list[Path]) -> list[Path]:
         if file_path.suffix.lower() not in SUPPORTED_EXTENSIONS:
             continue
 
-        if file_path.stat().st_size > MAX_FILE_SIZE_BYTES: #file size
+        if file_path.stat().st_size > MAX_FILE_SIZE_BYTES: #file size not larger than 1 MB for now 
             continue
 
         supported_file_paths.append(file_path)
