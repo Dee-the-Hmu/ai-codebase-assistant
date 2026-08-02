@@ -39,7 +39,7 @@ class Chunk(Base):
     )
 
     embedding: Mapped[list[float]] = mapped_column(
-        Vector(768), # replace 768 with the embedding dimension required by the embedding model chosen
+        Vector(896), # replace 768 with the embedding dimension required by the embedding model chosen
         nullable=False
     )
 
