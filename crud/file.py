@@ -47,11 +47,10 @@ def read_file_and_repo_with_file_ids(db: Session, file_ids : list[int]) -> dict[
                 .options(selectinload(File.repository)) # selectinload uses one query for files and one additional query for the related repositories.
                 .where(File.id.in_(file_ids))
                 )
-    files = db.scalar(statement).all()
+    files = db.scalars(statement).all()
 
     return {file.id : file for file in files}
     
-
 
 def update_file(db : Session, file : File, file_data : FileUpdate) -> File: 
     # convert Pydantic object into Dict 

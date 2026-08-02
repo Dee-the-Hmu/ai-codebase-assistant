@@ -44,11 +44,17 @@ def create_chunks(text_content : str, relative_file_path_str : str, file_id : in
 
     #is it Java file --> use tree sitter
     if suffix == ".java":
-        return create_java_chunks(text_content, file_id)
+        try:
+            return create_java_chunks(text_content, file_id)
+        except (SyntaxError, ValueError):
+            return create_line_based_chunks(text_content, file_id)
         
     #is it JavaScript, TypeScript file --> use tree sitter
     if suffix in {".js", ".jsx", ".ts", ".tsx"}:
-        return create_javascript_typescript_chunks(text_content, file_id, suffix=suffix)
+        try:
+            return create_javascript_typescript_chunks(text_content, file_id, suffix=suffix)
+        except (SyntaxError, ValueError):
+                    return create_line_based_chunks(text_content, file_id)
 
     #is it markdown 
     if suffix == ".md":

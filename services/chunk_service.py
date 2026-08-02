@@ -20,15 +20,15 @@ from sqlalchemy.orm import Session
 #for 1 chunk
 def create_chunk_with_embed(db : Session, chunk_data_with_no_embedding : ChunkRawWithNoEmbedding) -> Chunk | None:
 
-    #chunk_data has file_id -> find the file with this file_id to get its info
+    #chunk_data has file_id -> find the file with this file_id to get its info (type = a dict of key = file_id, value = file)
     file_dict_with_id = read_file_and_repo_with_file_ids(db, [chunk_data_with_no_embedding.file_id]) #use read_file_and_repo_with_file_ids to avoid lazy loading
 
-    file = file_dict_with_id.get(chunk_data_with_no_embedding.file_id)
+    file = file_dict_with_id.get(chunk_data_with_no_embedding.file_id) #get the file 
 
     if file is None:
         return None
     
-    repo = file.repository # no longer lazy loading
+    repo = file.repository
 
     #make a searchable_text
     searchable_text = build_searchable_text(

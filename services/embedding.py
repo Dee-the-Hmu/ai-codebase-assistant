@@ -37,7 +37,7 @@ def embed_code_chunks(searchable_texts : list[str]) -> list[list[float]] :
         show_progress_bar=True
     )
 
-    return embeddings.toList
+    return embeddings.tolist()
 
 
 def embed_user_question(query : str) -> list[float]:
