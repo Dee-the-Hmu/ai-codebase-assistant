@@ -56,7 +56,7 @@ def create_python_chunks(text_content : str, file_id : int) -> list[ChunkRawWith
     # handle function and class
     for node in tree.body: 
 
-        # if it is a function
+        # if it is a function (top level function)
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)): 
             start_line = node.lineno #lineno starts count from 1
             end_line = node.end_lineno #end of that syntax structure (end of function)
@@ -77,9 +77,12 @@ def create_python_chunks(text_content : str, file_id : int) -> list[ChunkRawWith
         #if a class
         elif isinstance(node, ast.ClassDef):
 
+            class_level_nodes = []
+        
             #loop thru the class
             for class_node in node.body:
-                
+
+                #method inside the class
                 if isinstance(class_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                     start_line = class_node.lineno
                     end_line = class_node.end_lineno
@@ -98,5 +101,37 @@ def create_python_chunks(text_content : str, file_id : int) -> list[ChunkRawWith
                         chunk_type="method",
                         file_id=file_id
                     ))
+
+                #class-level content (lines outside methods)
+                # Pydantic attributes, SQLAlchemy columns 
+                # class docstring
+                else:
+                    class_level_nodes.append(class_node)
+
+            if class_level_nodes:
+                class_parts = [source_lines[node.lineno-1]]
+                class_end_line = node.lineno #just to initialize 
+
+                for class_node in  class_level_nodes:
+                    if class_node.end_lineno is None:
+                        continue
+
+                    #add only that node's line (this is so that not to include the methods between class-lvl contents)
+                    class_part = "\n".join(source_lines[class_node.lineno - 1 : class_node.end_lineno])
+
+                    class_parts.append(class_part)
+                    class_end_line = max(class_end_line, class_node.end_lineno)
+
+                chunk_text = "\n".join(class_parts)
+
+                chunks_raw.append(ChunkRawWithNoEmbedding(
+                    text_content=chunk_text,
+                    start_line=node.lineno,
+                    end_line=class_end_line,
+                    class_name=node.name, 
+                    func_name=None,
+                    chunk_type="class",
+                    file_id=file_id
+                ))
 
     return chunks_raw
