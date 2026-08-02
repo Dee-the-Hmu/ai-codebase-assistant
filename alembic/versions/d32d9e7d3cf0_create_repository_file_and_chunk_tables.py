@@ -11,7 +11,7 @@ from alembic import op
 import sqlalchemy as sa
 
 from pgvector.sqlalchemy import Vector
-
+import pgvector
 
 # revision identifiers, used by Alembic.
 revision: str = 'd32d9e7d3cf0'
