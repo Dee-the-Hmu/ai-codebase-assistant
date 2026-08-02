@@ -22,11 +22,12 @@ def create_java_chunks(text_content: str, file_id: int) -> list[ChunkRawWithNoEm
     chunks : list[ChunkRawWithNoEmbedding] = []
     header_nodes = []
 
-    def get_node_text(node) -> str: #decode the text for the chunk back 
+    def get_node_text(node) -> str: #helper inside function: decode the text for the chunk back 
         return source_bytes[node.start_byte : node.end_byte].decode("utf-8")
 
     def visit(node, current_class_name : str | None = None) -> None:
 
+        #node types = package, import 
         if node.type in { 
             "import_declaration",
             "package_declaration",
@@ -40,7 +41,7 @@ def create_java_chunks(text_content: str, file_id: int) -> list[ChunkRawWithNoEm
             "enum_declaration",
             "record_declaration"
         }:
-            name_node = node.child_by_field_name("name")
+            name_node = node.child_by_field_name("name") #this extract the name from the source bytes
             if name_node is not None:  #there might not be a class name
                 class_name = get_node_text(name_node)
 
@@ -67,7 +68,7 @@ def create_java_chunks(text_content: str, file_id: int) -> list[ChunkRawWithNoEm
                 )
                 )
 
-        #visit curr_node's childern
+        #visit curr_node's childern #children nodes can include = modifiers, return type, method name, parameters, method body 
         for child in node.named_childern:
             visit(child, class_name)
 
@@ -78,7 +79,7 @@ def create_java_chunks(text_content: str, file_id: int) -> list[ChunkRawWithNoEm
     if header_nodes:
         header_text = "\n".join(get_node_text(node) for node in header_nodes)
 
-    #put that at the front of the chunks list
+    #put that at the Front of the chunks list
     chunks.insert(0, ChunkRawWithNoEmbedding(
         text_content=header_text,
         start_line=header_nodes[0].start_point.row+1,

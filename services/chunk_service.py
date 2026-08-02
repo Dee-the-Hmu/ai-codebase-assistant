@@ -39,10 +39,10 @@ def create_chunk_with_embed(db : Session, chunk_data_with_no_embedding : ChunkRa
         text_content=chunk_data_with_no_embedding.text_content
     )
 
-    #convert it to vector embedding
+    #generate its vector embedding
     embedding = embed_code_chunk(searchable_text=searchable_text)
 
-    #creates a ChunkCreate
+    #creates a ChunkCreate pydantic model (ready to insert to the database)
     chunk_data_with_embedding = ChunkCreate(
         **chunk_data_with_no_embedding.model_dump(), #converts the Pydantic model into a dictionary, ** = unpacks the dict into named keyword arguments
         embedding=embedding
@@ -57,14 +57,14 @@ def create_chunk_with_embed(db : Session, chunk_data_with_no_embedding : ChunkRa
 # for a list of chunks
 def create_chunks_with_embeddings(db : Session, chunk_datas_with_no_embeddings: list[ChunkRawWithNoEmbedding]) -> list[Chunk]:
     
-    file_ids : set[int] = set() #use set to remove duplicate file_id
+    file_ids_set : set[int] = set() #use set to remove duplicate file_id
     searchable_texts = []
 
     # get the file_ids of all ChunkRawWithNoEmbeddings
     for chunk_data_with_no_embedding in chunk_datas_with_no_embeddings: 
-        file_ids.add(chunk_data_with_no_embedding.file_id)
+        file_ids_set.add(chunk_data_with_no_embedding.file_id)
 
-    file_ids = list(file_ids)
+    file_ids = list(file_ids_set)
 
     # get the file and repo from the file_ids
     files_dict_with_id = read_file_and_repo_with_file_ids(db, file_ids=file_ids) #returns dict[file_id, file]

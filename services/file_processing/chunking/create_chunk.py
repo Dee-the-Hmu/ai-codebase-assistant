@@ -54,7 +54,7 @@ def create_chunks(text_content : str, relative_file_path_str : str, file_id : in
         try:
             return create_javascript_typescript_chunks(text_content, file_id, suffix=suffix)
         except (SyntaxError, ValueError):
-                    return create_line_based_chunks(text_content, file_id)
+            return create_line_based_chunks(text_content, file_id)
 
     #is it markdown 
     if suffix == ".md":

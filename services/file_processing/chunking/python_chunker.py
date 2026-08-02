@@ -14,7 +14,7 @@ def create_python_chunks(text_content : str, file_id : int) -> list[ChunkRawWith
 
     """ 
     node = 1 top-lvl Python statement = 1 syntax structure 
-    tree.body = a list containint the top-level statements in the paresed Python file
+    tree.body = a list containing the top-level statements in the paresed Python file
     """
 
     #handle import(s)
@@ -94,7 +94,7 @@ def create_python_chunks(text_content : str, file_id : int) -> list[ChunkRawWith
                         start_line=start_line,
                         end_line=end_line,
                         class_name=node.name,
-                        func_name=class_node.name,
+                        func_name=class_node.name, 
                         chunk_type="method",
                         file_id=file_id
                     ))
