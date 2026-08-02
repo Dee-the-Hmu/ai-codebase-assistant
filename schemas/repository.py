@@ -28,6 +28,8 @@ class RepositoryResponse(RepositoryBase):
     updated_at : datetime
 
     model_config = ConfigDict(from_attributes=True) #allows Pydantic to build responses directly SQLAlchemy Repository object's attribute
-        
+
+class RepositoryIngestRequest(BaseModel): #for the frontend to send JSON
+    github_url : str
 
 
