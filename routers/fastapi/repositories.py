@@ -12,6 +12,9 @@ router = APIRouter(prefix="/repositories",
                    tags=["repositories"] #group these endpoints under repositories if FASTAPI auto documentation
         )
 
+"""
+creates a repo (download, filter, chunk the files)
+"""
 @router.post(
     "",
     response_model=RepositoryResponse, #tells FastAPI what the returned response should look like 
