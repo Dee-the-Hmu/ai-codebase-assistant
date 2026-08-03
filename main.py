@@ -1,6 +1,6 @@
 from fastapi import FastAPI 
-from routers.repositories import router as repositories_router
-from routers.questions import router as questions_router
+from routers.fastapi.repositories import router as repositories_router
+from routers.fastapi.questions import router as questions_router
 
 from fastapi.middleware.cors import CORSMiddleware
 
