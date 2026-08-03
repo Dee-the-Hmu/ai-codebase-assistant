@@ -52,7 +52,7 @@ Rules:
 
 [file_path:start_line-end_line]
 
-5. Only cite file paths and line ranges that appear in the provided context.
+5. Use only the exact file path and complete line range shown in a SOURCE block. Do not create, shorten, expand, or estimate line ranges.
 6. Explain both:
    * what the code does
    * how the relevant code works to accomplish it
