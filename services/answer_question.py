@@ -25,7 +25,7 @@ get the user's question from the frontend
 embed the question
 compare with all the embeddings we have
 """
-def retrieve_related_chunks(db : Session, question : str, repo_id : int) -> list[Chunk]:
+def retrieve_related_chunks(db : Session, question : str, repo_id : int) -> list[tuple[Chunk, float]]:
 
     #embed the question
     question_embedding = embed_user_question(question)
@@ -96,7 +96,7 @@ add strict prompt
     LLM answers the question
 returns the answer, list of CitationResponse
 """
-def answer(related_chunks : list[Chunk], question : str) -> tuple[str, list[CitationResponse]]:
+def answer(related_chunks : list[tuple[Chunk, float]], question : str) -> tuple[str, list[CitationResponse]]:
 
     #empty retrieval 
     if not related_chunks:
@@ -133,10 +133,10 @@ User question:
 """
 combine all the related chunks together as a string
 """
-def helper_build_context_from_related_chunks(related_chunks : list[Chunk]) -> str:
+def helper_build_context_from_related_chunks(related_chunks : list[tuple[Chunk, float]]) -> str:
     contexts_list = []
 
-    for src_number, chunk in enumerate(related_chunks, start=1): #src number = chunk's position in the retrived results 
+    for src_number, (chunk, cosine_distance) in enumerate(related_chunks, start=1): #src number = chunk's position in the retrived results 
         context = f"""
 SOURCE: {src_number}
 File: {chunk.file.path}
@@ -158,16 +158,23 @@ Chunk type: {chunk.chunk_type}
 """
 get a list of citation (only file paths and line ranges)
 """
-def helper_build_citation_list(related_chunks : list[Chunk]) -> list[CitationResponse]:
+def helper_build_citation_list(related_chunks : list[tuple[Chunk, float]]) -> list[CitationResponse]:
 
     citation_list = []
 
-    for chunk in related_chunks:
+    for chunk, cosine_distance in related_chunks:
+
+        #smaller distance = higher similarity 
+        similarity_score = max( #to not go above 1 or below 0
+            0.00,
+            min(1, 1 - cosine_distance))
+
         citation_list.append(
             CitationResponse(
                 file_path=chunk.file.path,
                 start_line=chunk.start_line,
-                end_line=chunk.end_line
+                end_line=chunk.end_line,
+                similarity_score=similarity_score
             )
         )
 
