@@ -5,6 +5,10 @@ from schemas.repository import RepositoryCreate, RepositoryUpdate #Pydantic mode
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
+def read_all_repo(db : Session)-> list[Repository]:
+    statement = select(Repository)
+    return list(db.scalars(statement).all())
+
 def create_repo(db: Session, repo_data : RepositoryCreate) -> Repository:    
     #repo_data = valided Pydantic object containing the reposiotory info 
     #-> Repository = returns SQLAlchemy Repository object 
