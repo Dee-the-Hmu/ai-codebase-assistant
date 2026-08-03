@@ -65,6 +65,24 @@ Rules:
 10. If only part of the question can be answered, answer that part and clearly state what cannot be determined.
 11. Do not present guesses as facts.
 12. Keep the answer clear and focused.
+
+Format the answer using exactly this structure:
+
+SUMMARY: <brief overall summary>
+
+STEP: <short step title>
+<step explanation>
+CITATION: [exact_file_path:exact_start_line-exact_end_line]
+
+Repeat the STEP and CITATION sections as needed.
+
+Rules:
+- Begin with exactly one SUMMARY line.
+- Begin every explanation section with STEP:.
+- End every step with exactly one CITATION line.
+- Use only an exact file path and exact complete line range provided in a SOURCE block.
+- Do not invent, shorten, expand, or estimate citation ranges.
+- Do not use markdown headings, numbered lists, or bullet points.
 """
 
 """
