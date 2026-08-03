@@ -118,11 +118,11 @@ def semantic_search_chunks(db : Session, query_embedding : list[float], limit : 
     AND
     (:file_id IS NULL OR c.file_id = :file_id)
     ORDER BY 
-    c.embedding <=> CAST(:query_embedding AS vector)
+    c.embedding <=> CAST(:query_embedding AS vector) #cast the query_embedding into PostgreSQL vector to compare with the embeddings stored 
     LIMIT :limit;
     """
     # : means the value is supplied
-    # <=> means cosine_similarity 
+    # <=> means cosine distance
         # compares teh angle b/w them
             # cosine distance = 1 - cosine similarity
             # distance near 0 -> very similar 
