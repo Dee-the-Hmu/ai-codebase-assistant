@@ -108,7 +108,11 @@ def delete_by_chunk_id_and_file_id(db : Session, chunk_id : int, file_id : int) 
     return True
 
 
-def semantic_search_chunks(db : Session, query_embedding : list[float], limit : int, file_id : int | None = None, repo_id : int | None = None) -> list[Chunk]:
+"""
+returns [10 most similar chunks and their cosine distance]
+
+"""
+def semantic_search_chunks(db : Session, query_embedding : list[float], limit : int, file_id : int | None = None, repo_id : int | None = None) -> list[tuple[Chunk, float]]:
     
     """
     SELECT * FROM chunks AS c 
@@ -129,7 +133,13 @@ def semantic_search_chunks(db : Session, query_embedding : list[float], limit : 
             # larger distance -> less similar
     # CAST means convert the value from list[float] to vector 
 
-    statement = select(Chunk).options( 
+    #to know how similar each chunk is to the question asked
+    #calculates the distance b/w chunk's embedding and question embedding 
+    cosine_distance = Chunk.embedding.cosine_distance(
+        query_embedding
+    ).label("cosine_distance") #gives the calculated SQL result a column name
+
+    statement = select(Chunk, cosine_distance).options( 
         selectinload(Chunk.file) #also load the chunk's related file at the same time
     )
 
@@ -142,7 +152,18 @@ def semantic_search_chunks(db : Session, query_embedding : list[float], limit : 
         )
 
     statement = (statement
-        .order_by(Chunk.embedding.cosine_distance(query_embedding)) 
+        .order_by(cosine_distance)  #sorts chunk from smallest distance to largest 
         .limit(limit)
     )
-    return list(db.scalars(statement).all())
+
+    # a list of (Chunk_object, cosine_distance)
+    results = db.execute(statement).all()
+
+    result_list = []
+
+    for chunk, distance in results:
+        result_list.append(
+            (chunk, float(distance))
+        )
+
+    return result_list
