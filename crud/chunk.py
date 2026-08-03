@@ -5,7 +5,7 @@ from models.file import File
 
 from schemas.chunk import ChunkCreate, ChunkUpdate
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy import select
 
 # for 1 chunk
@@ -118,7 +118,7 @@ def semantic_search_chunks(db : Session, query_embedding : list[float], limit : 
     AND
     (:file_id IS NULL OR c.file_id = :file_id)
     ORDER BY 
-    c.embedding <=> CAST(:query_embedding AS vector) #cast the query_embedding into PostgreSQL vector to compare with the embeddings stored 
+    c.embedding <=> CAST(:query_embedding AS vector) #sorts by cosine distance in ascending order, cast the query_embedding into PostgreSQL vector to compare with the embeddings stored 
     LIMIT :limit;
     """
     # : means the value is supplied
@@ -128,7 +128,10 @@ def semantic_search_chunks(db : Session, query_embedding : list[float], limit : 
             # distance near 0 -> very similar 
             # larger distance -> less similar
     # CAST means convert the value from list[float] to vector 
-    statement = select(Chunk)
+
+    statement = select(Chunk).options( 
+        selectinload(Chunk.file) #also load the chunk's related file at the same time
+    )
 
     if repo_id is not None: 
         statement = statement.join(File).where(File.repo_id==repo_id)
