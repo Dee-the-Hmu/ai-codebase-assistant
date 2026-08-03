@@ -1,10 +1,12 @@
 import { Link, useLocation } from "react-router"
 import { motion } from "motion/react"
+import SimilarityChart from "./components/SimilarityChart"
 
 type CitationResponse = {
   file_path: string
   start_line: number | null
   end_line: number | null
+  similarity_score: number
 }
 
 type AnswerStep = {
@@ -462,6 +464,12 @@ function ResultsPage() {
             )}
           </motion.section>
 
+          {state.citations.length > 0 && (
+            <div className="mt-8">
+              <SimilarityChart citations={state.citations} />
+            </div>
+          )}
+          
           {state.citations.length > 0 && (
             <motion.section
               className="mt-8 rounded-3xl border border-white/10 bg-slate-900/70 p-6 shadow-2xl shadow-black/20 backdrop-blur"
