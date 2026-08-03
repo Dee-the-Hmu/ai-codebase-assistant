@@ -71,14 +71,19 @@ Format the answer using exactly this structure:
 SUMMARY: <brief overall summary>
 
 STEP: <short step title>
-<step explanation>
+<first explanation line>
+<second explanation line>
+<third explanation line>
 CITATION: [exact_file_path:exact_start_line-exact_end_line]
 
 Repeat the STEP and CITATION sections as needed.
 
 Rules:
 - Begin with exactly one SUMMARY line.
-- Begin every explanation section with STEP:.
+- Begin every explanation section with STEP: followed by a short title.
+- Write the explanation for each step as multiple short lines.
+- Put each distinct action or behavior on its own line.
+- Do not combine the entire explanation into one paragraph.
 - End every step with exactly one CITATION line.
 - Use only an exact file path and exact complete line range provided in a SOURCE block.
 - Do not invent, shorten, expand, or estimate citation ranges.
