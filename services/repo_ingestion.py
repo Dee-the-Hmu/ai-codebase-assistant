@@ -1,31 +1,3 @@
-"""
-
-ingest_repository(get the github_url )
-    validate it and extract owner and repo name  using url_validation
-    confrim it is a public repo (call GitHub API) using client.py's get_repository, check_public
-        get repo's metadata and default branch and latest commit sha for that branch
-        get RepositoryCreate Pydantic Model 
-    create Repository record (using the above RepositoryCreate model)
-        check for existing repository 
-    Calls crud's repository_create 
-    continue ingestion
-        download repo (ZIP/TAR archive using the commit SHA)
-        extract into a temporary directory
-
-Use the downloaded files (extracted repository)
-    walk thru directories
-    filter unsupported or ignored files 
-    read supported files 
-
-    create File records 
-    chunk each File's Content
-    
-    build searchable texts
-    create embeddings
-    store Chunk records
-
-"""
-
 from sqlalchemy.orm import Session
 
 from models.repository import Repository
