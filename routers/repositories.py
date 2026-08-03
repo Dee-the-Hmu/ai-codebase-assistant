@@ -5,7 +5,7 @@ from database import get_db
 from schemas.repository import RepositoryResponse, RepositoryIngestRequest
 from models.repository import Repository
 from services.repo_ingestion import ingest_repository
-
+from crud.repository import read_all_repo
 
 
 router = APIRouter(prefix="/repositories", 
@@ -35,10 +35,11 @@ def create_repository_endpoint(
 
 
 
-# @router.get("")
+@router.get(
+    "",
+    response_model=list[RepositoryResponse]
+    )
+def get_all_repos(db : Session = Depends(get_db)) -> list[RepositoryResponse]:
+    return read_all_repo(db=db)
 
 
-# @router.get("/{repo_id}")
-
-
-# @router.delete("/{repo_id}")
