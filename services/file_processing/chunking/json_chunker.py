@@ -12,8 +12,12 @@ def create_json_chunks(text_content : str, file_id : int) -> list[ChunkRawWithNo
 
     chunks: list[ChunkRawWithNoEmbedding] = []
 
-    # for key-value pair dict -> embed each key-value pair 
-    if isinstance(parsed_json, dict):
+    #get the number of lines in the entire file 
+
+    total_lines = len(text_content.splitlines())
+
+    # for key-value pair dict -> embed each key-value pair #since I am not using Tree-sitter for JSON files (endline for each chunk will be the endline of entire file)
+    if isinstance(parsed_json, dict): 
 
         #iterate the dictionary
         for key, value in parsed_json.items():
@@ -26,7 +30,7 @@ def create_json_chunks(text_content : str, file_id : int) -> list[ChunkRawWithNo
             )
 
             #embed each key-value pair for better retrieval, key becomes the function name
-            append_json_chunks(chunks=chunks, text_content=chunk_text, file_id=file_id, func_name=str(key), chunk_type="json_object")
+            append_json_chunks(chunks=chunks, text_content=chunk_text, file_id=file_id, func_name=str(key), chunk_type="json_object", total_lines=total_lines)
 
     # for list
     elif isinstance(parsed_json, list):
@@ -42,7 +46,7 @@ def create_json_chunks(text_content : str, file_id : int) -> list[ChunkRawWithNo
             )
 
             #embed each value, index becomes the function name (array index)
-            append_json_chunks(chunks=chunks, text_content=chunk_text, file_id=file_id, func_name=str(index), chunk_type="json_array_item")
+            append_json_chunks(chunks=chunks, text_content=chunk_text, file_id=file_id, func_name=str(index), chunk_type="json_array_item", total_lines=total_lines)
 
     # else, embed the whole json file as one
     else: 
@@ -52,7 +56,7 @@ def create_json_chunks(text_content : str, file_id : int) -> list[ChunkRawWithNo
             ensure_ascii=False
         )
 
-        append_json_chunks(chunks=chunks, text_content=entire_chunk_context, file_id=file_id, func_name=None, chunk_type="json_value")
+        append_json_chunks(chunks=chunks, text_content=entire_chunk_context, file_id=file_id, func_name=None, chunk_type="json_value", total_lines=total_lines)
 
     #JSON parsing produces no chunks
     if not chunks:
@@ -61,12 +65,12 @@ def create_json_chunks(text_content : str, file_id : int) -> list[ChunkRawWithNo
     return chunks
 
 
-def append_json_chunks(chunks : list[ChunkRawWithNoEmbedding], text_content : str, file_id : int, func_name : str | None, chunk_type : str) -> None:
+def append_json_chunks(chunks : list[ChunkRawWithNoEmbedding], text_content : str, file_id : int, func_name : str | None, chunk_type : str, total_lines : int) -> None:
 
     chunks.append(ChunkRawWithNoEmbedding(
         text_content=text_content,
-        start_line=None,
-        end_line=None,
+        start_line=1,
+        end_line=total_lines,
         class_name=None,
         func_name=func_name,
         chunk_type=chunk_type,
