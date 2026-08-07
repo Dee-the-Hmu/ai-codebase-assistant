@@ -120,7 +120,7 @@ pgvector provides vector similarity search directly inside PostgreSQL.
 - React Router
 - Motion
 
-The frontend was integrated with the backend but was not part of my primary implementation work except the data visualization part.
+**Note:** The frontend was integrated with the backend but was not part of my primary implementation work except the data visualization part.
 ---
 
 ## 5. Architecture / RAG Pipeline
