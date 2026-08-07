@@ -36,6 +36,9 @@ IGNORED_FILE_NAMES = {
     ".env",
     ".env.local",
     ".env.production",
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml"
 }
 
 MAX_FILE_SIZE_BYTES = 1_000_000
