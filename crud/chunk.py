@@ -135,29 +135,28 @@ def semantic_search_chunks(db : Session, query_embedding : list[float], limit : 
 
     #to know how similar each chunk is to the question asked
     #calculates the distance b/w chunk's embedding and question embedding 
-    cosine_distance = Chunk.embedding.cosine_distance(
+    cosine_distance = Chunk.embedding.cosine_distance( #SQLAlchemy/pgvector syntax (chunks.embedding <=> :query_embedding)
         query_embedding
-    ).label("cosine_distance") #gives the calculated SQL result a column name
+    ).label("cosine_distance") #AS cosine_distance = gives the calculated SQL result a column name
 
-    statement = select(Chunk, cosine_distance).options( 
-        selectinload(Chunk.file) #also load the chunk's related file at the same time
+    statement = select(Chunk, cosine_distance).options(  #SELECT chunks.*, cosine distance FROM chunks
+        selectinload(Chunk.file) #also load the File object associated with each chunk 
     )
 
     if repo_id is not None: 
-        statement = statement.join(File).where(File.repo_id==repo_id)
-
+        statement = statement.join(File).where(File.repo_id==repo_id) # JOIN files ON files.id = chunks.file_id
     if file_id is not None:
         statement = statement.where(
             Chunk.file_id==file_id
         )
 
     statement = (statement
-        .order_by(cosine_distance)  #sorts chunk from smallest distance to largest 
+        .order_by(cosine_distance)  #sorts chunk from smallest distance to largest (asending order by default) ORDER BY cosine_distance ASC
         .limit(limit)
     )
 
     # a list of (Chunk_object, cosine_distance)
-    results = db.execute(statement).all()
+    results = db.execute(statement).all() #sends the constructed SQL statement to the database, .all() = retrieved all returned rows
 
     result_list = []
 
