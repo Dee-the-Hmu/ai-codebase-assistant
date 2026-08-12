@@ -45,6 +45,7 @@ MAX_FILE_SIZE_BYTES = 1_000_000
 
 def filter_supported_file_paths(file_paths : list[Path]) -> list[Path]:
 
+    print("number of all files found: ", len(file_paths))
     supported_file_paths = []
 
     for file_path in file_paths: 
