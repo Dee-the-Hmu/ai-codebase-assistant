@@ -25,6 +25,16 @@ services:
       #Mac port 5432 -> database container port 5432
       - "5432:5432"
 
+    # database health check 
+    # healthcheck = defines how Docker checks the container's health 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d codebase"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    #interval = run the check every 5s, fail a check if it takes longer than 5 seconds
+    #retries = after 5 failchecks, marh the container as unhealthy
+
   #backend service
   backend:
     #use the Dockerfile in the current project dir
@@ -37,6 +47,42 @@ services:
     # mac port 5001 to backend container port 5001
     ports:
       - "5001:5001"
+
+    # make database migration Automatic so we don't have to manually run
+    #this command = overrides the Dockerfile CMD, thus must add python ....py to run Flask
+    command: sh -c "alembic upgrade head && python flask_main.py"
+
+    # starts the db container first
+    depends_on: 
+      db: 
+        #depends on db being healthy (do not start backend until db passes its healthcheck)
+          condition: service_healthy 
+
+    healthcheck:
+      # test: ["CMD", "curl", "-f", "http://localhost:5001/health"] to do this, backend need to install curl
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+      #gives grace perid to the backend (since backend loads the embedding model at start up, may need more time before /heath becomes available)
+      start_period: 30s
+
+
+
+  #frontend servive
+  frontend:
+    #use the Dockerfile in the /frontend folder 
+    build: ./frontend
+
+    # expose the Vite frontend port 
+    ports:
+      - "5173:5173"
+
+    #make the Compose starts backend before frontend
+    depends_on:
+      backend:
+        condition: service_healthy
 
 #tells Compose to create/manage a Dockere volume named postgres_data
 volumes:
