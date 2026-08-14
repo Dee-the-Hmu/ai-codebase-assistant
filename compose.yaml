@@ -68,8 +68,6 @@ services:
       #gives grace perid to the backend (since backend loads the embedding model at start up, may need more time before /heath becomes available)
       start_period: 30s
 
-
-
   #frontend servive
   frontend:
     #use the Dockerfile in the /frontend folder 
