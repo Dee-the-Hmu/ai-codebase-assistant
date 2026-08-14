@@ -29,5 +29,12 @@ def create_app() -> Flask:
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=True, use_reloader=False, port=5001, host="0.0.0.0") #use_reloader = does not restart automatically -> to not load the embedding model twice
 
+"""
+127.0.0.1
+→ only this container can reach Flask
+
+0.0.0.0
+→ Flask accepts connections coming into the container
+"""
