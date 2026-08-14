@@ -6,6 +6,6 @@ health_router = Blueprint(
     url_prefix="/health"
 )
 
-@health_router.get()
+@health_router.get("")
 def health():
     return {"status" : "ok"}, 200
