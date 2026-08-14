@@ -1,0 +1,8 @@
+#to tell docker not to copy these files/folders into the image
+
+.venv
+venv
+__pycache__
+.git
+.env
+frontend/node_modules
