@@ -2,6 +2,7 @@ from flask import Flask
 from flask_cors import CORS #React will connect with this 
 from routers.flask.repositories import repositories_router
 from routers.flask.questions import questions_router
+from routers.flask.health import health_router
 
 import models
 
@@ -16,6 +17,7 @@ def create_app() -> Flask:
 
     app.register_blueprint(repositories_router) #connects the repository Blueprint to the Flask app
     app.register_blueprint(questions_router)
+    app.register_blueprint(health_router)
 
     @app.get("/health")
     def health_check():
@@ -29,7 +31,7 @@ def create_app() -> Flask:
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=False, port=5001, host="0.0.0.0") #use_reloader = does not restart automatically -> to not load the embedding model twice
+    app.run(debug=False, use_reloader=False, port=5001, host="0.0.0.0") #use_reloader = does not restart automatically -> to not load the embedding model twice
 
 """
 127.0.0.1
