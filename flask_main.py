@@ -19,13 +19,6 @@ def create_app() -> Flask:
     app.register_blueprint(questions_router)
     app.register_blueprint(health_router)
 
-    @app.get("/health")
-    def health_check():
-        return{
-            "status" : "ok",
-            "framework" : "flask"
-        },200
-
     return app
 
 app = create_app()
