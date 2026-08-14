@@ -1,0 +1,47 @@
+# Containers Docker Compose will manage
+services:
+
+  #database servicve
+  #name we chose for this database service
+  db:
+    #use an existing PostgreSQL image that already includes pgvector (instead of builing ourselves)
+    image: pgvector/pgvector:pg16
+
+    # Environment variables used to initialize PostgreSQL
+    environment:
+      # Initial database Docker/PostgreSQL creates
+      POSTGRES_DB: codebase
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+    #volume = so that the PostgreSQL data survives even if the database container is deleted and recreated
+    #w/o a volume = deleting the database containere = delete its database file too
+    volumes:
+      # postgres_data is the named volume
+      # /var/lib/postgresql/data is where PostgreSQL stores its data inside the container
+      - postgres_data:/var/lib/postgresql/data
+
+    ports:
+      #Mac port 5432 -> database container port 5432
+      - "5432:5432"
+
+  #backend service
+  backend:
+    #use the Dockerfile in the current project dir
+    build: .
+    
+    #pass your .env values into the backend container
+    env_file:
+      - .env
+    
+    # mac port 5001 to backend container port 5001
+    ports:
+      - "5001:5001"
+
+#tells Compose to create/manage a Dockere volume named postgres_data
+volumes:
+  postgres_data:
+
+
+
+#docker compose exec backend alembic upgrade head
