@@ -9,10 +9,12 @@ import models
 def create_app() -> Flask:
     app = Flask(__name__)
     
-    #tells Flask to include response headers that permit requests from React development server
-    CORS(
+    CORS(#tells Flask which Frontend websites are allowed to call my Flask backend from a browser
         app,
-        origins=["http://localhost:5173"]
+        origins=[
+            "http://localhost:5173",
+            "https://d12mwdjp9rnq6y.cloudfront.net" #CloudFront frontend domain
+        ]
     )
 
     app.register_blueprint(repositories_router) #connects the repository Blueprint to the Flask app
