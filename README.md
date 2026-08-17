@@ -1,615 +1,174 @@
+<img width="2460" height="1646" alt="image" src="https://github.com/user-attachments/assets/f465b5ae-e5ff-4761-bdb7-7e777753f1a7" />
+
 # AI Codebase Assistant
 
-## Authors
-Dee Aein
+**RAG-powered developer tool that ingests public GitHub repositories and answers codebase questions using semantic retrieval with exact file and line citations.**
 
-## 1. Overview
-
-AI Codebase Assistant is a Retrieval-Augmented Generation (RAG) application designed to help developers understand public GitHub repositories.
-
-Users provide the URL of a public GitHub repository, and the system ingests its source code and documentation, divides supported files like .py, .java, .json, etc. into searchable chunks, generates vector embeddings, and stores the resulting data in PostgreSQL with pgvector.
-
-When a user asks a question about an ingested repository, the system performs semantic similarity search to retrieve the most relevant 10 code chunks. These chunks are provided to an LLM as grounded repository context, along with the user's question, allowing the system to generate answers based on the actual codebase rather than unsupported model knowledge.
-
-Each retrieved chunk preserves source metadata such as its file path and line range, allowing generated answers to include verifiable citations.
+Built end-to-end with **Python, Flask, PostgreSQL, pgvector, Sentence Transformers, OpenAI, React, Docker, and AWS**.
 
 ---
 
-## 2. Features
+## Impact
 
-- Ingest public GitHub repositories from a repository URL
-- Retrieve repository information and the latest commit SHA
-- Download repository source code as a ZIP archive
-- Extract repositories into temporary storage for processing
-- Recursively discover repository files
-- Filter unsupported, generated, secret, oversized, and dependency files
-- Read supported source files as text
-- Split each file into searchable chunks
-- Preserve metadata for each chunk, including:
-  - File path
-  - Start line number
-  - End line number
-  - Function name
-  - Class name
-  - Chunk type
-  - Chunk code context 
-- Generate vector embeddings using Sentence Transformers
-- Store embeddings using PostgreSQL and pgvector
-- Perform semantic similarity search using cosine distance
-- Restrict searches to the selected repository
-- Generate grounded answers using an LLM
-- Return file paths and exact line-number citations
-- Browse previously ingested repositories
-- Ask repository-specific questions through a web interface
-- Display structured answers and retrieved sources
-- Preserve both Flask and FastAPI backend implementations
+- **Achieved 100% Top-10 and 86.7% Top-2 retrieval success** across 15 repository-specific questions on 2 codebases using Sentence Transformer embeddings and pgvector cosine-similarity search.
+- **Achieved 100% grounded responses** across 15 manually evaluated answers by constraining OpenAI-generated responses to retrieved code context and returning exact file- and line-level citations through REST API endpoints.
 
 ---
 
-## 3. How It Works
+## Live Demo
 
-1. The user submits the URL of a public GitHub repository.
-2. The backend validates and parses the repository URL.
-3. The system verifies that the repository exists and is publicly accessible.
-4. Repository metadata and the latest commit SHA are retrieved.
-5. The repository archive is downloaded from GitHub.
-6. The archive is extracted into a temporary directory.
-7. The system recursively discovers repository files.
-8. Unsupported or unnecessary files are filtered out.
-9. Supported files are read as UTF-8 text.
-10. Each file is divided into searchable chunks.
-11. Metadata is attached to each chunk.
-12. Searchable chunk text is converted into a vector embedding.
-13. Repository, file, chunk, metadata, and embedding information is stored in PostgreSQL.
-14. The user selects an ingested repository and submits a question.
-15. The question is converted into an embedding using the same embedding model.
-16. pgvector performs semantic similarity search against chunks belonging to the selected repository.
-17. The most relevant chunks are retrieved.
-18. Retrieved chunks are formatted into structured context.
-19. The context and question are sent to the LLM.
-20. The LLM generates an answer using only the supplied repository context.
-21. The system returns the answer along with source file paths and exact stored line ranges.
+> **Live Application:** https://d12mwdjp9rnq6y.cloudfront.net/
+
+![AI Codebase Assistant Demo](images/demo1.png)
+![AI Codebase Assistant Demo](images/demo2.png)
+![AI Codebase Assistant Demo](images/demo3.png)
+![AI Codebase Assistant Demo](images/demo4.png)
 
 ---
 
-## 4. Tech Stack
-
-### Backend
-
-The backend and RAG system were implemented end-to-end using: 
-
-- Python
-- Flask
-- FastAPI (currently not used)
-- SQLAlchemy
-- Pydantic
-- Alembic
-
-Flask is currently used as the primary backend for the project demo and grading environment.
-
-FastAPI is preserved as an alternative API layer while sharing the same underlying application logic. (I wanted to learn how to use FastAPI)
-
-### Database
-
-- PostgreSQL
-- pgvector
-
-PostgreSQL stores repository metadata, file metadata, chunks, and vector embeddings.
-
-pgvector provides vector similarity search directly inside PostgreSQL.
-
-### AI / Machine Learning
-
-- Sentence Transformers
-- OpenAI Responses API
-- Retrieval-Augmented Generation (RAG)
-- Vector embeddings
-- Semantic similarity search
-- Cosine-distance retrieval
-
-### Data Visualization
-
-- Matplotlib
-
-### Frontend
-
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- React Router
-- Motion
-
-**Note:** The frontend was integrated with the backend but was not part of my primary implementation work except the data visualization part.
-
-
----
-
-## 5. Architecture / RAG Pipeline
-
-The application contains two major pipelines:
-
-1. Repository ingestion
-2. Repository question answering
-
-### Repository Ingestion Pipeline
+## Architecture
 
 ```text
-GitHub Repository URL
-        |
-        v
-Repository Validation
-        |
-        v
-Latest Commit SHA
-        |
-        v
-Download Repository ZIP
-        |
-        v
-Extract Repository
-        |
-        v
-Discover Files
-        |
-        v
-Filter Unsupported Files
-        |
-        v
-Read Source Files
-        |
-        v
-Create File Records
-        |
-        v
-Chunk File Content
-        |
-        v
-Build Searchable Text
-        |
-        v
-Generate Embeddings
-        |
-        v
-PostgreSQL + pgvector
-````
+                              ┌─────────────────────┐
+                              │    GitHub Repo      │
+                              └──────────┬──────────┘
+                                         │
+                                         ▼
+                              ┌─────────────────────┐
+                              │ Repository Ingestion│
+                              │ Download / Filter   │
+                              │ Chunk / Embed       │
+                              └──────────┬──────────┘
+                                         │
+                                         ▼
+                              ┌─────────────────────┐
+                              │ PostgreSQL          │
+                              │ + pgvector          │
+                              └──────────┬──────────┘
+                                         │
+                                         │ Semantic Search
+                                         │
+┌─────────┐    ┌────────────┐    ┌──────▼───────┐    ┌────────────────┐
+│  User   │───▶│ CloudFront │───▶│     ALB      │───▶│ ECS / Fargate  │
+└─────────┘    │   + S3     │    └──────────────┘    │ Flask REST API │
+               │   React    │                         └───────┬────────┘
+               └────────────┘                                │
+                                                             ▼
+                                                    ┌─────────────────┐
+                                                    │ Sentence        │
+                                                    │ Transformers    │
+                                                    └────────┬────────┘
+                                                             │
+                                                             ▼
+                                                    ┌─────────────────┐
+                                                    │ pgvector        │
+                                                    │ Retrieval       │
+                                                    └────────┬────────┘
+                                                             │
+                                                             ▼
+                                                    ┌─────────────────┐
+                                                    │ OpenAI LLM      │
+                                                    │ Grounded Answer │
+                                                    └─────────────────┘
+```
 
-### Question Answering Pipeline
+### AWS Deployment
+
+```text
+Frontend:
+User → CloudFront → S3
+
+Backend:
+CloudFront → Application Load Balancer → ECS/Fargate → RDS PostgreSQL
+
+Container Deployment:
+Docker Image → ECR → ECS Task Definition → Fargate Task
+```
+
+---
+
+## Key Engineering Features
+
+- **End-to-end RAG pipeline** for understanding unfamiliar codebases
+- **Semantic retrieval with PostgreSQL + pgvector** using cosine distance
+- **Repository-aware search** that restricts retrieval to the selected repository
+- **Exact file and line citations** preserved from retrieved source chunks
+- **Grounded LLM generation** restricted to retrieved repository context
+- **GitHub ingestion pipeline** for downloading, filtering, reading, and processing source code
+- **Metadata-aware chunking** preserving file paths, line ranges, functions, classes, and chunk types
+- **Sentence Transformer embeddings** for source code and user questions
+- **REST API** for repository ingestion, repository discovery, and question answering
+- **Framework-independent service layer** shared by Flask and FastAPI implementations
+- **Dockerized backend deployed with AWS ECS/Fargate**
+- **PostgreSQL + pgvector deployed with Amazon RDS**
+- **Production frontend hosted through S3 + CloudFront**
+- **Application Load Balancer** routing requests to healthy ECS tasks
+
+---
+
+## How It Works
+
+1. **Ingest Repository**  
+   A user submits the URL of a public GitHub repository. The backend validates the repository and retrieves its latest commit.
+
+2. **Process Source Code**  
+   The repository is downloaded as a ZIP archive, extracted temporarily, and recursively scanned. Unsupported, generated, secret, oversized, and dependency files are filtered out.
+
+3. **Chunk and Embed**  
+   Supported files are divided into searchable chunks while preserving metadata such as file path, line range, function name, class name, and chunk type. Each chunk is converted into a vector embedding.
+
+4. **Store in PostgreSQL**  
+   Repository metadata, file metadata, chunks, and embeddings are stored in PostgreSQL with pgvector.
+
+5. **Retrieve Relevant Code**  
+   A user question is embedded using the same embedding model. pgvector performs repository-specific cosine similarity search and retrieves the most relevant source chunks.
+
+6. **Build Grounded Context**  
+   Retrieved chunks are formatted into structured source context containing the exact source path, line range, metadata, and code.
+
+7. **Generate the Answer**  
+   The LLM receives only the retrieved repository context and the user's question, then returns a structured explanation with exact file and line citations.
+
+---
+
+## RAG Pipeline
 
 ```text
 User Question
-      |
-      v
+      │
+      ▼
 Question Embedding
-      |
-      v
-pgvector Semantic Search
-      |
-      v
-Top 10 Relevant Repository Chunks
-      |
-      v
-Structured LLM Context
-      |
-      v
+      │
+      ▼
+Repository-Filtered pgvector Search
+      │
+      ▼
+Top Relevant Code Chunks
+      │
+      ▼
+Structured Source Context
+      │
+      ▼
 OpenAI LLM
-      |
-      v
+      │
+      ▼
 Grounded Answer
-      |
-      v
-File + Line Citations
-```
-
-Semantic retrieval is repository-specific, preventing chunks from unrelated repositories from being included in the search.
-
-Retrieved chunks are ordered using pgvector cosine distance, where a smaller distance represents greater semantic similarity.
-
----
-
-## 6. Project Structure
-
-```text
-project-root/
-|
-├── alembic/
-|   └── Alembic database migrations
-|
-├── crud/
-|   └── Database CRUD and semantic-search operations
-|
-├── frontend/
-|   └── React + TypeScript frontend
-|
-├── models/
-|   └── SQLAlchemy ORM models
-|
-├── routers/
-|   ├── fastapi/
-|   |   ├── repositories.py
-|   |   └── questions.py
-|   |
-|   └── flask/
-|       ├── repositories.py
-|       └── questions.py
-|
-├── schemas/
-|   └── Pydantic request and response schemas
-|
-├── services/
-|   ├── file_processing/
-|   |   └── File discovery, filtering, and reading logic
-|   |
-|   ├── github/
-|   |   ├── archive.py
-|   |   ├── client.py
-|   |   └── url_validation.py
-|   |
-|   ├── answer_question.py
-|   ├── chunk_service.py
-|   ├── embedding.py
-|   ├── repo_ingestion.py
-|   └── searchable_text.py
-|
-|
-├── database.py
-├── fastapi_main.py (currently not used)
-├── flask_main.py
-├── requirements.txt
-└── README.md
-```
-
-Both Flask and FastAPI use the same:
-
-* Database models
-* CRUD functions
-* Schemas
-* Repository ingestion services
-* File-processing logic
-* Chunking logic
-* Embedding logic
-* Semantic retrieval logic
-* LLM answer-generation logic
-
-This keeps the web framework separate from the core application behavior.
-
----
-
-## 7. Setup and Installation
-
-### Prerequisites
-
-Install the following before running the project:
-
-* Python
-* PostgreSQL
-* pgvector
-* Node.js
-* npm
-* Git
-
-An OpenAI API key is also required for question answering.
-
-### Clone the Repository
-
-```bash
-git clone <repository-url>
-cd <repository-directory>
-```
-
-### Create a Python Virtual Environment
-
-```bash
-python -m venv .venv
-```
-
-#### macOS / Linux
-
-```bash
-source .venv/bin/activate
-```
-
-#### Windows
-
-```bash
-.venv\Scripts\activate
-```
-
-### Install Backend Dependencies
-
-From the project root:
-
-```bash
-pip install -r requirements.txt
-```
-
-### Install Frontend Dependencies
-
-```bash
-cd frontend
-npm install
-cd ..
+      │
+      ▼
+Exact File + Line Citations
 ```
 
 ---
 
-## 8. Environment Variables
+## Engineering Decisions & Challenges
 
-Create a `.env` file in the backend project directory.
+### Preventing Hallucinated Citations
 
-Example:
+An early version allowed the LLM to generate narrower line ranges than those actually returned by retrieval.
 
-```env
-DATABASE_URL=postgresql://username:password@localhost:5432/database_name
-OPENAI_API_KEY=your_openai_api_key
-```
+The grounding prompt was strengthened so the model must use the **complete file path and exact stored line range** from a retrieved source chunk.
 
-Replace:
-
-- `username` with your PostgreSQL username
-- `password` with your PostgreSQL password
-- `your_openai_api_key` with your OpenAI API key
-
-Do not commit the `.env` file or API keys to source control.
-
----
-
-## 9. Database Setup
-
-The application uses PostgreSQL with the pgvector extension.
-
-### Create the Database
-
-```sql
-CREATE DATABASE ai_codebase_assistant;
-```
-
-Connect to the database and enable pgvector:
-
-```sql
-CREATE EXTENSION IF NOT EXISTS vector;
-```
-
-Add the PostgreSQL connection string to the `.env` file.
-
-```env
-DATABASE_URL=postgresql://username:password@localhost:5432/ai_codebase_assistant
-```
-
-### Run Database Migrations
-
-The project uses Alembic to create and manage the database schema.
-
-```bash
-alembic upgrade head
-```
-The migrations create the required tables, relationships, and pgvector-compatible columns.
-
-### Database Structure 
-
-The database 3 primary database entities:
-
-### Repository
-
-Stores information about an ingested GitHub repository.
-
-### File
-
-Stores metadata about files belonging to a repository.
-
-The full source-file content is not stored directly in the `File` table.
-
-### Chunk
-
-Stores searchable portions of repository content.
-
-Each chunk contains:
-
-* Text content
-* Vector embedding
-* Start line
-* End line
-* Function name
-* Class name
-* Chunk type
-* File relationship
-
-The vector embedding is stored using pgvector and is used for semantic similarity search.
-
-### Database Relationships
-
-```text
-Repository
-    |
-    | one-to-many
-    v
-File
-    |
-    | one-to-many
-    v
-Chunk
-```
----
-
-## 10. Running the Application
-
-The current demo configuration uses:
-
-* Flask backend: `http://localhost:5001`
-* React frontend: `http://localhost:5173`
-
-### Start the Flask Backend
-
-From the project root:
-
-```bash
-python flask_main.py
-```
-
-The Flask API runs at:
-
-```text
-http://localhost:5001
-```
-
-### Start the React Frontend
-
-Open another terminal:
-
-```bash
-cd frontend
-npm run dev
-```
-
-The frontend runs at:
-
-```text
-http://localhost:5173
-```
-
-### Optional: Run the FastAPI Backend
-
-The FastAPI application is defined in:
-
-```text
-fastapi_main.py
-```
-
-It is typically available at:
-
-```text
-http://localhost:8000
-```
-
-Interactive API documentation is available at:
-
-```text
-http://localhost:8000/docs
-```
-
-The frontend is currently configured to communicate with Flask on port `5001`.
-
----
-
-## 11. Usage
-
-### Ingest a Repository
-
-1. Start PostgreSQL.
-2. Start the Flask backend.
-3. Start the React frontend.
-4. Open the frontend in a browser.
-5. Enter the URL of a public GitHub repository.
-6. Submit the repository for ingestion.
-7. Wait while the backend downloads and processes the repository.
-8. The repository becomes available for question answering after ingestion completes.
-
-Example:
-
-```text
-https://github.com/owner/repository
-```
-
-### Select an Existing Repository
-
-Previously ingested repositories are retrieved from the backend and displayed in the frontend.
-
-Select a repository before asking a question.
-
-### Ask a Question
-
-Example:
-
-```text
-How does repository ingestion work?
-```
----
-
-## 12. API Endpoints
-
-### Health Check
-
-```http
-GET /health
-```
-
-Checks whether the Flask server is running.
-
-### Get Repositories
-
-```http
-GET /repositories
-```
-
-Returns previously ingested repositories.
-
-### Ingest Repository
-
-```http
-POST /repositories
-```
-
-Example request:
-
-```json
-{
-  "github_url": "https://github.com/owner/repository"
-}
-```
-
-### Ask Repository Question
-
-```http
-POST /repositories/<repo_id>/questions
-```
-
-Example:
-
-```http
-POST /repositories/1/questions
-```
-
-Request:
-
-```json
-{
-  "question": "How does repository ingestion work?"
-}
-```
-
----
-
-## 13. Citation / Grounding Behavior
-
-The application is designed to reduce hallucination by restricting the LLM to repository context retrieved through semantic search.
-
-Each retrieved chunk is provided to the model as a structured source containing information such as:
-
-```text
-SOURCE 1
-
-File: services/repo_ingestion.py
-Lines: 30-70
-Class: ...
-Function: ...
-Chunk Type: ...
-Content:
-...
-```
-
-The LLM is instructed to:
-
-* Answer only from supplied repository context
-* Avoid inventing files
-* Avoid inventing functions or classes
-* Avoid inventing program behavior
-* Avoid inventing line numbers
-* Use complete source file paths
-* Use exact stored line ranges
-* Avoid estimating narrower citation ranges
-* State when the retrieved context is insufficient
-
-Generated citations follow the format:
+Generated citations follow:
 
 ```text
 [file_path:start_line-end_line]
@@ -621,29 +180,187 @@ Example:
 [services/repo_ingestion.py:30-70]
 ```
 
-The API also returns structured citation objects generated directly from retrieved database chunks.
+Structured citation data is also generated directly from retrieved database chunks rather than relying entirely on model-generated citation text.
 
 ---
 
-## 14. Current Limitations
+### Repository-Aware Semantic Retrieval
 
-* Only public GitHub repositories are currently supported.
-* Private repository authentication is not implemented.
-* Repository ingestion is synchronous.
-* Large repositories may require significant processing time and memory.
-* Running multiple backend processes may load multiple copies of the embedding model.
-* Chunking works best for Python files currently. 
-* Ingestion status tracking is not yet implemented.
-* Have yet to include testing.
-* Repository updates are not automatically re-ingested.
-* Semantic retrieval currently uses a fixed top-10 limit. (top-k)
+All vector searches are filtered by repository ID before results are returned.
+
+This prevents semantically similar chunks from unrelated repositories from entering the LLM context.
+
+```text
+Question Embedding
+        │
+        ▼
+Filter by Repository
+        │
+        ▼
+Cosine Similarity Search
+        │
+        ▼
+Relevant Code Chunks
+```
 
 ---
 
-## 15. Project Goals
+### Preserving Source Context During Chunking
 
-The goal of AI Codebase Assistant is to demonstrate how modern AI systems can combine software engineering, semantic search, relational databases, vector databases, REST APIs, and Retrieval-Augmented Generation to improve codebase understanding.
+Chunks contain more than raw code.
 
-Rather than allowing an LLM to answer repository questions from general model knowledge, the system retrieves relevant source code from the actual repository and provides that code as grounded context.
+Each chunk can preserve:
 
+- File path
+- Start line
+- End line
+- Function name
+- Class name
+- Chunk type
+- Source code context
 
+This metadata allows retrieved results to remain traceable back to the original repository.
+
+---
+
+### Separating Framework Logic from Core Services
+
+The project supports both **Flask and FastAPI** API layers while sharing the same underlying:
+
+- Database models
+- CRUD operations
+- Schemas
+- Repository ingestion
+- File processing
+- Chunking
+- Embedding
+- Semantic retrieval
+- LLM answer generation
+
+This keeps HTTP framework concerns separate from the core application logic.
+
+---
+
+### Deploying the Backend as a Containerized AWS Service
+
+The backend is packaged as a Docker image and stored in **Amazon ECR**.
+
+ECS/Fargate runs the container using an ECS task definition, while an Application Load Balancer provides a stable network entry point and routes requests to healthy tasks.
+
+```text
+Backend Code
+     │
+     ▼
+Docker Image
+     │
+     ▼
+Amazon ECR
+     │
+     ▼
+ECS Task Definition
+     │
+     ▼
+ECS / Fargate Task
+     │
+     ▼
+Application Load Balancer
+```
+
+Amazon RDS provides the PostgreSQL + pgvector database, while AWS networking and security groups restrict communication between infrastructure components.
+
+---
+
+## Tech Stack
+
+| Area | Technologies |
+|---|---|
+| **Backend** | Python, Flask, FastAPI (alternative API layer), SQLAlchemy, Pydantic |
+| **RAG / AI** | Sentence Transformers, OpenAI Responses API, vector embeddings |
+| **Database** | PostgreSQL, pgvector, Alembic |
+| **Frontend** | React, TypeScript, Vite, Tailwind CSS, React Router |
+| **Visualization** | Matplotlib |
+| **Containers** | Docker |
+| **AWS** | ECR, ECS/Fargate, RDS, S3, CloudFront, Application Load Balancer |
+| **External API** | GitHub REST API |
+
+---
+
+## Results & Evaluation
+
+The retrieval and grounding pipeline was evaluated using both the project's own codebase and the public [Requests](https://github.com/psf/requests) repository.
+
+### Retrieval Quality
+
+#### AI Codebase Assistant — 10 Question Evaluation
+
+| Metric | Result |
+|---|---:|
+| Correct source in Top 10 | **100% (10/10)** |
+| Correct source in Top 2 | **90% (9/10)** |
+| Correct source ranked #1 | **60% (6/10)** |
+| Average ground-truth rank | **1.9** |
+| Average similarity | **54.3%** |
+| Fully grounded answers | **100%** |
+
+The correct source appeared within the top 10 retrieved chunks for every test question, and within the top two results for 9 of 10 questions.
+
+This evaluation also exposed an early citation-grounding issue: although answers were grounded in the retrieved code, the LLM sometimes shortened retrieved line ranges when generating citations. The grounding prompt was subsequently strengthened to require the exact stored chunk range.
+
+---
+
+#### Requests — External Repository Evaluation
+
+Repository: `psf/requests`
+
+| Metric | Result |
+|---|---:|
+| Correct source in Top 10 | **100% (5/5)** |
+| Correct source in Top 2 | **80% (4/5)** |
+| Fully grounded answers | **100% (5/5)** |
+| Valid exact citations | **100% (5/5)** |
+| Average response latency | **4.7 s** |
+
+The questions covered multi-step behaviors including HTTP request preparation, adapter selection, urllib3 transport, `PreparedRequest` construction, and redirect handling.
+
+Testing on an external repository helped verify that the retrieval pipeline generalized beyond the codebase it was developed on.
+
+---
+
+### Repository Ingestion
+
+| Repository | Files Discovered | Files Processed | Chunks Created | Ingestion Time |
+|---|---:|---:|---:|---:|
+| AI Codebase Assistant | 75 | 55 | 158 | ~27 s |
+| Requests | 130 | 65 | 771 | 155 s |
+
+For the Requests repository, the system:
+
+```text
+130 files discovered
+        ↓
+65 files processed
+        ↓
+771 searchable chunks
+        ↓
+771 embeddings generated
+        ↓
+PostgreSQL + pgvector
+```
+
+These tests demonstrate the complete pipeline across repositories of different sizes, from source-file discovery and filtering through chunking, embedding, semantic retrieval, grounded generation, and citation validation.
+
+---
+
+## Current Limitations
+
+- Supports public GitHub repositories only
+- Repository ingestion is currently synchronous
+- Large repositories require additional processing time and memory
+- Repository updates are not automatically re-ingested
+- Retrieval currently uses a fixed top-k value
+- Chunking is currently strongest for Python source files
+- Automated testing and broader evaluation are still in progress
+
+---
+
+Instead of allowing an LLM to answer questions from general model knowledge, the system retrieves relevant source code from the actual repository and uses that code as the grounded context for every answer.
