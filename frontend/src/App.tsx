@@ -8,6 +8,8 @@ import {
 
 import ResultsPage from "./ResultsPage"
 
+const API_URL = import.meta.env.VITE_API_URL
+
 type RepositoryResponse = {
   id: number
   github_url: string
@@ -70,7 +72,7 @@ function HomePage() {
 
     try {
       const response = await fetch(
-        "http://localhost:5001/repositories",
+        `${API_URL}/repositories`,
         {
           method: "POST",
           headers: {
@@ -111,7 +113,7 @@ function HomePage() {
 
     try {
       const response = await fetch(
-        "http://localhost:5001/repositories",
+        `${API_URL}/reposiotires`,
       )
 
       const data = await response.json()
@@ -162,7 +164,7 @@ function HomePage() {
 
     try {
       const response = await fetch(
-        `http://localhost:5001/repositories/${activeRepositoryId}/questions`,
+        `${API_URL}/repositories/${activeRepositoryId}/questions`,
         {
           method: "POST",
           headers: {
