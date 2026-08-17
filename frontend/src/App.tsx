@@ -113,7 +113,7 @@ function HomePage() {
 
     try {
       const response = await fetch(
-        `${API_URL}/reposiotires`,
+        `${API_URL}/repositories`,
       )
 
       const data = await response.json()
