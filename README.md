@@ -18,6 +18,7 @@ Built end-to-end with **Python, Flask, PostgreSQL, pgvector, Sentence Transforme
 ## Live Demo
 
 > **Live Application:** https://d12mwdjp9rnq6y.cloudfront.net/
+> > **Note:** The live deployment may be temporarily unavailable due to AWS hosting costs. Screenshots and architecture details below show the deployed application and system design.
 
 ![AI Codebase Assistant Demo](images/demo2.png)
 ![AI Codebase Assistant Demo](images/demo3.png)
