@@ -19,7 +19,6 @@ Built end-to-end with **Python, Flask, PostgreSQL, pgvector, Sentence Transforme
 
 > **Live Application:** https://d12mwdjp9rnq6y.cloudfront.net/
 
-![AI Codebase Assistant Demo](images/demo1.png)
 ![AI Codebase Assistant Demo](images/demo2.png)
 ![AI Codebase Assistant Demo](images/demo3.png)
 ![AI Codebase Assistant Demo](images/demo4.png)
@@ -29,47 +28,59 @@ Built end-to-end with **Python, Flask, PostgreSQL, pgvector, Sentence Transforme
 ## Architecture
 
 ```text
-                              ┌─────────────────────┐
-                              │    GitHub Repo      │
-                              └──────────┬──────────┘
-                                         │
-                                         ▼
-                              ┌─────────────────────┐
-                              │ Repository Ingestion│
-                              │ Download / Filter   │
-                              │ Chunk / Embed       │
-                              └──────────┬──────────┘
-                                         │
-                                         ▼
-                              ┌─────────────────────┐
-                              │ PostgreSQL          │
-                              │ + pgvector          │
-                              └──────────┬──────────┘
-                                         │
-                                         │ Semantic Search
-                                         │
-┌─────────┐    ┌────────────┐    ┌──────▼───────┐    ┌────────────────┐
-│  User   │───▶│ CloudFront │───▶│     ALB      │───▶│ ECS / Fargate  │
-└─────────┘    │   + S3     │    └──────────────┘    │ Flask REST API │
-               │   React    │                         └───────┬────────┘
-               └────────────┘                                │
-                                                             ▼
-                                                    ┌─────────────────┐
-                                                    │ Sentence        │
-                                                    │ Transformers    │
-                                                    └────────┬────────┘
-                                                             │
-                                                             ▼
-                                                    ┌─────────────────┐
-                                                    │ pgvector        │
-                                                    │ Retrieval       │
-                                                    └────────┬────────┘
-                                                             │
-                                                             ▼
-                                                    ┌─────────────────┐
-                                                    │ OpenAI LLM      │
-                                                    │ Grounded Answer │
-                                                    └─────────────────┘
+                               ┌─────────────────────┐
+                               │     GitHub Repo     │
+                               └──────────┬──────────┘
+                                          │
+                                          │ Download
+                                          ▼
+                               ┌─────────────────────┐
+                               │   ECS / Fargate     │
+                               │   Flask REST API    │
+                               └──────────┬──────────┘
+                                          │
+                         ┌────────────────┴────────────────┐
+                         │                                 │
+                         │ Repository Ingestion            │ Question Answering
+                         ▼                                 ▼
+              ┌─────────────────────┐           ┌─────────────────────┐
+              │ Download / Filter   │           │ Sentence            │
+              │ Chunk Source Files  │           │ Transformers        │
+              └──────────┬──────────┘           │ Question Embedding  │
+                         │                      └──────────┬──────────┘
+                         ▼                                 │
+              ┌─────────────────────┐                      ▼
+              │ Sentence            │           ┌─────────────────────┐
+              │ Transformers        │           │ PostgreSQL          │
+              │ Chunk Embeddings    │           │ + pgvector          │
+              └──────────┬──────────┘           │ Semantic Search     │
+                         │                      └──────────┬──────────┘
+                         ▼                                 │
+              ┌─────────────────────┐                      │ Retrieved
+              │ PostgreSQL          │                      │ Code Chunks
+              │ + pgvector          │                      ▼
+              │ Files / Chunks /    │           ┌─────────────────────┐
+              │ Embeddings          │           │ OpenAI LLM          │
+              └─────────────────────┘           │ Grounded Answer     │
+                                                │ + Citations         │
+                                                └──────────┬──────────┘
+                                                           │
+                                                           ▼
+                                                ┌─────────────────────┐
+                                                │   ECS / Fargate     │
+                                                │   Flask REST API    │
+                                                └──────────┬──────────┘
+                                                           │
+                                                           ▼
+┌─────────┐    ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│  User   │───▶│ Frontend        │───▶│ Backend         │───▶│      ALB        │
+└─────────┘    │ CloudFront      │    │ CloudFront      │    └────────┬────────┘
+               │       │         │    │ HTTPS API       │             │
+               │       ▼         │    └─────────────────┘             ▼
+               │      S3         │                          ┌─────────────────┐
+               │ React / Vite    │                          │ ECS / Fargate   │
+               └─────────────────┘                          │ Flask REST API  │
+                                                            └─────────────────┘
 ```
 
 ### AWS Deployment
