@@ -93,6 +93,7 @@ function HomePage() {
       }
 
       setRepository(data as RepositoryResponse)
+      await handleOpenRepositories()
       setShowRepositories(false)
     } catch (error) {
       if (error instanceof Error) {
